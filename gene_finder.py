@@ -9,6 +9,7 @@ Program for finding the protein-coding sequences in a DNA string
 import random
 from amino_acids import aa, codons, aa_table   # you may find these useful
 from load import load_seq
+import pprint
 
 
 def shuffle_string(s):
@@ -148,6 +149,12 @@ def longest_ORF(dna):
     >>> longest_ORF("ATGCGAATGTAGCATCAAA")
     'ATGCTACATTCGCAT'
     """
+    allOrfs = find_all_ORFs_both_strands(dna)
+    longestOrf = ''
+    for orf in allOrfs:
+        if len(orf) > len(longestOrf):
+            longestOrf = orf
+    return longestOrf
 
 
 def longest_ORF_noncoding(dna, num_trials):
@@ -157,8 +164,13 @@ def longest_ORF_noncoding(dna, num_trials):
         dna: a DNA sequence
         num_trials: the number of random shuffles
         returns: the maximum length longest ORF """
-    # TODO: implement this
-    pass
+    longestOrfLen = 0
+    for i in range(0, num_trials):
+        shuffled = shuffle_string(dna)
+        orfLen = len(longest_ORF(shuffled))
+        if orfLen > longestOrfLen:
+            longestOrfLen = orfLen
+    return longestOrfLen
 
 
 def coding_strand_to_AA(dna):
@@ -175,8 +187,10 @@ def coding_strand_to_AA(dna):
         >>> coding_strand_to_AA("ATGCCCGCTTT")
         'MPA'
     """
-    # TODO: implement this
-    pass
+    AAs = ''
+    for i in range(0, len(dna) - len(dna) % 3, 3):
+        AAs += aa_table[dna[i: i+3]]
+    return AAs
 
 
 def gene_finder(dna):
@@ -185,10 +199,24 @@ def gene_finder(dna):
         dna: a DNA sequence
         returns: a list of all amino acid sequences coded by the sequence dna.
     """
-    # TODO: implement this
-    pass
+    threshold = longest_ORF_noncoding(dna, 1500)
+    orfs = find_all_ORFs_both_strands(dna)
+    allAASequences = []
+    for orf in orfs:
+        if len(orf) > threshold:
+            allAASequences.append(coding_strand_to_AA(orf))
+    return allAASequences
 
 
 if __name__ == "__main__":
-    import doctest
-    doctest.testmod()
+    # mport doctest
+    # doctest.run_docstring_examples(coding_strand_to_AA , globals(), verbose = True)
+    # print(longest_ORF_noncoding(, )
+    dna = load_seq("./data/X73525.fa")
+    AAs = gene_finder(dna)
+    print("***********************************")
+    for AA in AAs:
+        print(AA)
+        print("***********************************")
+    # pp = pprint.PrettyPrinter(indent=4)
+    # pp.pprint(AAs)
